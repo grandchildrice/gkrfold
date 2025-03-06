@@ -165,6 +165,7 @@ fn test_normal_polynomial() {
         )
     }
 }
+
 #[test]
 #[should_panic]
 fn test_normal_polynomial_different_transcripts_fails() {
@@ -266,4 +267,46 @@ fn test_shared_reference() {
         poly.evaluate(&subclaim.point) == subclaim.expected_evaluation,
         "wrong subclaim"
     );
+}
+
+use ark_ff::PrimeField;
+fn fr_to_hex(x: Fr) -> String {
+    let bi = x.into_bigint();
+    let limbs = bi.as_ref();
+    let mut s = String::from("0x");
+    for &limb in limbs.iter().rev() {
+        s.push_str(&format!("{:016x}", limb));
+    }
+    s
+}
+
+#[test]
+fn test_solidity_output_demo() {
+    let mut rng = test_rng();
+    let nv = 3;
+    let (poly, asserted_sum) = random_list_of_products::<Fr, _>(nv, (1, 3), 2, &mut rng);
+
+    let poly_info = poly.info();
+    let d = poly_info.max_multiplicands;
+    let proof = MLSumcheck::prove(&poly).expect("fail to prove");
+
+    let subclaim = MLSumcheck::verify(&poly_info, asserted_sum, &proof)
+        .expect("Rust-side verification failed");
+    let final_value = subclaim.expected_evaluation;
+
+    println!("=== SumCheck Proof to solidity (nv={}) ===", nv);
+    println!("asserted_sum = {}", fr_to_hex(asserted_sum));
+    println!("final_value  = {}", fr_to_hex(final_value));
+    println!("num_variables = {}", nv);
+    println!("max_multiplicands = {}", d);
+
+    for (round_i, pm) in proof.iter().enumerate() {
+        let evals_hex: Vec<_> = pm.evaluations.iter().map(|&x| fr_to_hex(x)).collect();
+        println!("round {} => p_i(0..{}) = {:?}", round_i, d, evals_hex);
+    }
+
+    for (i, &r_i) in subclaim.point.iter().enumerate() {
+        println!("challenge r[{}] = {}", i, fr_to_hex(r_i));
+    }
+    println!("============================================");
 }
