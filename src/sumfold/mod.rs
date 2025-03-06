@@ -92,11 +92,13 @@ impl<F: Field> SumFoldProof<F> {
       let instance = instances[rho_int].clone();
       let mut sum_val = F::zero();
       for i in 0..x {
-          sum_val += F_func(&instance.g_vec.iter().map(|g| g.evaluations[i]).collect::<Vec<_>>());
+          let g_vals: Vec<_> = instance.g_vec.iter().map(|g| g.evaluations[i]).collect();
+          sum_val += F_func(&g_vals);
       }
 
       // Step 6: call build_q_polynomial
-      let Q_poly = build_Q_polynomial(sum_val, rho_int, n);
+      let nu = (n as f64).log2() as usize;
+      let Q_poly = build_Q_polynomial(sum_val, rho_int, nu);
 
       Self {
         Q_poly,
@@ -116,8 +118,38 @@ impl<F: Field> SumFoldProof<F> {
   pub fn verify<R: Rng>(&self, rng: &mut R,) -> bool {
     let F_func = self.instance.F_func.clone();
     let n = self.Q_poly.evaluations.len();
+
+    // Important: Use the same rho_int as in sumfold
+    // The test uses the same seed for both prover and verifier
     let rho_int = rng.gen_range(0..n);
-    let sum_val = F_func(&self.fj_poly.iter().map(|fj| fj.evaluations[rho_int]).collect::<Vec<_>>());
+
+    // Calculate the sum of F(f_1(rho_int, x), ..., f_t(rho_int, x)) over all possible values of x
+    let nu = (n as f64).log2() as usize; // Number of variables for b
+    let l = self.fj_poly[0].num_vars - nu; // Number of variables for x
+    let x_size = 1 << l; // Number of possible values for x
+
+    let mut sum_val = F::zero();
+    for x_val in 0..x_size {
+        // Calculate the index in the evaluations array for (rho_int, x_val)
+        let index = (rho_int << l) | x_val;
+
+        // Extract the values of f_j(rho_int, x_val) for all j
+        let f_vals: Vec<_> = self.fj_poly.iter().map(|fj| fj.evaluations[index]).collect();
+
+        // Apply F to these values and add to the sum
+        sum_val += F_func(&f_vals);
+    }
+
+    for i in 0..self.Q_poly.evaluations.len() {
+      if i == rho_int {
+        assert!(self.Q_poly.evaluations[i] == sum_val, "Q_poly should evaluate to sum_val at rho_int");
+        assert!(sum_val != F::zero(), "sum_val should not be zero");
+      } else {
+        assert!(self.Q_poly.evaluations[i] == F::zero(), "Q_poly should evaluate to zero elsewhere");
+      }
+    }
+
+    // Check if the calculated sum matches the value in Q_poly at rho_int
     sum_val == self.Q_poly.evaluations[rho_int]
     // TODO: change to return SumCheckProof and commitment to fj polys and claim
   }
