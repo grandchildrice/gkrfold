@@ -7,8 +7,7 @@ use ark_std::ops::Range;
 use ark_std::rc::Rc;
 use ark_std::test_rng;
 use criterion::{black_box, BenchmarkId, Criterion};
-use gkrfold::ml_sumcheck::protocol::ListOfProductsOfPolynomials;
-use gkrfold::ml_sumcheck::MLSumcheck;
+use gkrfold::ml_sumcheck::{protocol::ListOfProductsOfPolynomials, MLSumcheck};
 
 const NUM_VARIABLES_RANGE: Range<usize> = 10..21;
 
@@ -17,7 +16,7 @@ fn prove_bench<F: Field>(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("Prove");
     for nv in NUM_VARIABLES_RANGE {
-        group.bench_with_input(BenchmarkId::new("ML", nv), &nv, |b, &nv| {
+        group.bench_with_input(BenchmarkId::new("SumCheck", nv), &nv, |b, &nv| {
             let product_1: Vec<_> = (0..3)
                 .map(|_| Rc::new(DenseMultilinearExtension::<F>::rand(nv, &mut rng)))
                 .collect();
@@ -39,7 +38,7 @@ fn verify_bench<F: Field>(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("Verify");
     for nv in NUM_VARIABLES_RANGE {
-        group.bench_with_input(BenchmarkId::new("ML", nv), &nv, |b, &nv| {
+        group.bench_with_input(BenchmarkId::new("SumCheck", nv), &nv, |b, &nv| {
             let product_1: Vec<_> = (0..3)
                 .map(|_| Rc::new(DenseMultilinearExtension::<F>::rand(nv, &mut rng)))
                 .collect();

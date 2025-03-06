@@ -10,7 +10,7 @@ use gkrfold::{
     rng::{Blake2b512Rng, FeedableRNG},
 };
 
-const NUM_VARIABLES_RANGE: Range<usize> = 10..12;
+const NUM_VARIABLES_RANGE: Range<usize> = 10..21;
 
 fn prove_bench<F: Field>(c: &mut Criterion) {
     let mut rng = Blake2b512Rng::setup();

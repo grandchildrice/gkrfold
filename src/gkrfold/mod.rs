@@ -15,6 +15,7 @@ use crate::gkr_round_sumcheck::{initialize_phase_one, initialize_phase_two};
 use crate::sumfold::{utils::product_f, SumFoldInstance, SumFoldProof};
 
 /// A GKRFold instance is a tuple of three multilinear extensions and a vector of field elements.
+#[derive(Clone)]
 pub struct GKRFoldInstance<F: Field> {
     /// f1 is a multilinear extension of a polynomial in 3n variables.
     pub f1: SparseMultilinearExtension<F>,
