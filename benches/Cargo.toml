@@ -33,22 +33,22 @@ parallel = ["std", "ark-ff/parallel", "ark-poly/parallel", "ark-std/parallel", "
 
 [[bench]]
 name = "ml_sumcheck"
-path = "benches/ml_sumcheck_bench.rs"
+path = "src/ml_sumcheck_bench.rs"
 harness = false
 
 [[bench]]
 name = "gkr_round_sumcheck"
-path = "benches/gkr_round_sumcheck_bench.rs"
+path = "src/gkr_round_sumcheck_bench.rs"
 harness = false
 
 [[bench]]
 name = "sumfold"
-path = "benches/sumfold_bench.rs"
+path = "src/sumfold_bench.rs"
 harness = false
 
 [[bench]]
 name = "gkrfold"
-path = "benches/gkrfold_bench.rs"
+path = "src/gkrfold_bench.rs"
 harness = false
 
 # To be removed in the new release.
