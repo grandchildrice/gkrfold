@@ -99,6 +99,7 @@ fn test_sumfold_soundness() {
                     Q_poly: invalid_q_poly,
                     fj_poly: proof.fj_poly.clone(),
                     instances: instances.clone(),
+                    proof: proof.proof.clone(),
                 };
                 let mut verifier_rng = StdRng::seed_from_u64(122);
                 let verified = SumFoldProof::verify(&invalid_proof, &mut verifier_rng);

@@ -15,7 +15,9 @@ pub struct ProverMsg<F: Field> {
     /// evaluations on P(0), P(1), P(2), ...
     pub(crate) evaluations: Vec<F>,
 }
+
 /// Prover State
+#[derive(Clone)]
 pub struct ProverState<F: Field> {
     /// sampled randomness given by the verifier
     pub randomness: Vec<F>,

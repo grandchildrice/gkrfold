@@ -12,7 +12,9 @@ use ark_poly::DenseMultilinearExtension;
 use ark_std::rand::Rng;
 use fj_poly::build_fj_polynomial;
 use q_poly::build_Q_polynomial;
-use std::sync::Arc;
+use std::{rc::Rc, sync::Arc};
+
+use crate::ml_sumcheck::{protocol::ListOfProductsOfPolynomials, MLSumcheck, Proof};
 
 /// SumFoldInstance contains the information needed to construct a SumFoldProof.
 /// It contains a function F_func that takes a slice of Scalars (e.g. g0(x), g1(x), ...) and returns a single Scalar.
@@ -40,6 +42,8 @@ pub struct SumFoldProof<F: Field> {
     pub fj_poly: Vec<DenseMultilinearExtension<F>>,
     /// The SumFoldInstance contains the F_func and g_vec polynomials.
     pub instances: Vec<SumFoldInstance<F>>,
+    /// The SumCheck Proof for the folded instance
+    pub proof: Proof<F>,
 }
 
 impl<F: Field> SumFoldProof<F> {
@@ -102,9 +106,39 @@ impl<F: Field> SumFoldProof<F> {
 
         Self {
             Q_poly,
-            fj_poly: f_js,
+            fj_poly: f_js.clone(),
             instances: instances.clone(),
+            proof: Self::prove_outer_sumcheck(instances[rho_int].g_vec.clone()),
         }
+    }
+
+    /// Generates a ListOfProductsOfPolynomials from a vector of DenseMultilinearExtension
+    pub fn generate_list_of_poly(
+        g_vec: Vec<DenseMultilinearExtension<F>>,
+    ) -> ListOfProductsOfPolynomials<F> {
+        let dim = g_vec[0].num_vars;
+        let mut poly: ListOfProductsOfPolynomials<F> = ListOfProductsOfPolynomials::new(dim);
+        poly.add_product(
+            g_vec.into_iter().map(|poly| Rc::new(poly.clone())),
+            F::one(),
+        );
+        poly
+    }
+
+    /// Proves the folded instance by SumCheck Protocol
+    pub fn prove_outer_sumcheck(g_vec: Vec<DenseMultilinearExtension<F>>) -> Proof<F> {
+        let poly = Self::generate_list_of_poly(g_vec);
+        MLSumcheck::prove(&poly).unwrap()
+    }
+
+    /// Verifies the outer SumCheck Protocol
+    pub fn verify_outer_sumcheck(
+        g_vec: Vec<DenseMultilinearExtension<F>>,
+        proof: Proof<F>,
+        claim: F,
+    ) -> bool {
+        let poly = Self::generate_list_of_poly(g_vec);
+        MLSumcheck::verify(&poly.info(), claim, &proof).is_ok()
     }
 
     /// Verifies the SumFoldProof by following the requested steps:
@@ -159,10 +193,19 @@ impl<F: Field> SumFoldProof<F> {
             }
         }
 
-        // Check if the calculated sum matches the value in Q_poly at rho_int
-        Ok(sum_val == self.Q_poly.evaluations[rho_int])
-        // TODO: change to return SumCheckProof and commitment to fj polys and claim
-        // TODO: return to the instance
+        if sum_val != self.Q_poly.evaluations[rho_int] {
+            return Err(Error::InvalidSum);
+        }
+
+        if !Self::verify_outer_sumcheck(
+            self.instances[rho_int].g_vec.clone(),
+            self.proof.clone(),
+            sum_val,
+        ) {
+            return Err(Error::InvalidSum);
+        }
+
+        Ok(true)
     }
 }
 
