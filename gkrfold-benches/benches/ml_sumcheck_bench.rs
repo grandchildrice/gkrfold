@@ -2,13 +2,13 @@
 extern crate criterion;
 
 use ark_ff::Field;
-use gkrfold::ml_sumcheck::protocol::ListOfProductsOfPolynomials;
-use gkrfold::ml_sumcheck::MLSumcheck;
 use ark_poly::{DenseMultilinearExtension, MultilinearExtension};
 use ark_std::ops::Range;
 use ark_std::rc::Rc;
 use ark_std::test_rng;
 use criterion::{black_box, BenchmarkId, Criterion};
+use gkrfold::ml_sumcheck::protocol::ListOfProductsOfPolynomials;
+use gkrfold::ml_sumcheck::MLSumcheck;
 
 const NUM_VARIABLES_RANGE: Range<usize> = 10..21;
 

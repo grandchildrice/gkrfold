@@ -11,8 +11,8 @@ use ark_std::rand::Rng;
 #[cfg(test)]
 mod test;
 
-use crate::sumfold::{SumFoldProof, SumFoldInstance, utils::product_f};
 use crate::gkr_round_sumcheck::{initialize_phase_one, initialize_phase_two};
+use crate::sumfold::{utils::product_f, SumFoldInstance, SumFoldProof};
 
 /// A GKRFold instance is a tuple of three multilinear extensions and a vector of field elements.
 pub struct GKRFoldInstance<F: Field> {
@@ -33,48 +33,53 @@ pub struct GKRFoldInstance<F: Field> {
 #[allow(unused_mut)]
 #[allow(unused_assignments)]
 pub fn gkrfold<F: Field, R: Rng>(
-  instances: Vec<GKRFoldInstance<F>>,
-  rng: &mut R,
-  sumfold_rng: &mut R,
+    instances: Vec<GKRFoldInstance<F>>,
+    rng: &mut R,
+    sumfold_rng: &mut R,
 ) -> SumFoldProof<F> {
-  let mut sc_instances = Vec::new();
-  let mut u = vec![F::zero(); instances[0].f2.num_vars];
-  let mut v = vec![F::one(); instances[0].f2.num_vars];
-  let F_func = Arc::new(product_f);
+    let mut sc_instances = Vec::new();
+    let mut u = vec![F::zero(); instances[0].f2.num_vars];
+    let mut v = vec![F::one(); instances[0].f2.num_vars];
+    let F_func = Arc::new(product_f);
 
-  for instance in &instances {
-    let (f1, f2, f3, g) = (instance.f1.clone(), instance.f2.clone(), instance.f3.clone(), instance.g.clone());
-    let dim = f2.num_vars;
+    for instance in &instances {
+        let (f1, f2, f3, g) = (
+            instance.f1.clone(),
+            instance.f2.clone(),
+            instance.f3.clone(),
+            instance.g.clone(),
+        );
+        let dim = f2.num_vars;
 
-    // initialize phase one and get h_g, f1_g
-    let (h_g, f1_g) = initialize_phase_one(&f1, &f3, &g);
+        // initialize phase one and get h_g, f1_g
+        let (h_g, f1_g) = initialize_phase_one(&f1, &f3, &g);
 
-    // initialize phase two and get f1_gu
-    let f1_gu = initialize_phase_two(&f1_g, &u);
+        // initialize phase two and get f1_gu
+        let f1_gu = initialize_phase_two(&f1_g, &u);
 
-    // calculate f3(f2(u))
-    let f3_f2u = {
-      let mut zero = DenseMultilinearExtension::zero();
-      zero += (f2.evaluate(&u), &f3);
-      zero
-    };
+        // calculate f3(f2(u))
+        let f3_f2u = {
+            let mut zero = DenseMultilinearExtension::zero();
+            zero += (f2.evaluate(&u), &f3);
+            zero
+        };
 
-    // prepare SumFoldInstance
-    let sc_1 = SumFoldInstance {
-      F_func: F_func.clone(),
-      g_vec: vec![h_g, f2],
-    };
-    let sc_2 = SumFoldInstance {
-      F_func: F_func.clone(),
-      g_vec: vec![f1_gu, f3_f2u],
-    };
-    sc_instances.push(sc_1);
-    sc_instances.push(sc_2);
+        // prepare SumFoldInstance
+        let sc_1 = SumFoldInstance {
+            F_func: F_func.clone(),
+            g_vec: vec![h_g, f2],
+        };
+        let sc_2 = SumFoldInstance {
+            F_func: F_func.clone(),
+            g_vec: vec![f1_gu, f3_f2u],
+        };
+        sc_instances.push(sc_1);
+        sc_instances.push(sc_2);
 
-    // receive new random (u,v) from Verifier
-    u = (0..dim).map(|_| F::rand(rng)).collect::<Vec<F>>();
-    v = (0..dim).map(|_| F::rand(rng)).collect::<Vec<F>>();
-  }
+        // receive new random (u,v) from Verifier
+        u = (0..dim).map(|_| F::rand(rng)).collect::<Vec<F>>();
+        v = (0..dim).map(|_| F::rand(rng)).collect::<Vec<F>>();
+    }
 
-  SumFoldProof::sumfold(sc_instances, sumfold_rng)
+    SumFoldProof::sumfold(sc_instances, sumfold_rng)
 }

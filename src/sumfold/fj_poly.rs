@@ -29,8 +29,7 @@ pub fn build_fj_polynomial<F: Field>(
     let l = gs_for_j[0].num_vars;
     for b in 1..num_b {
         assert_eq!(
-            gs_for_j[b].num_vars,
-            l,
+            gs_for_j[b].num_vars, l,
             "all g_{{b,j}}(x) must have the same number of variables"
         );
     }
@@ -51,12 +50,7 @@ pub fn build_fj_polynomial<F: Field>(
 /// - x: Decimal representation of x. An integer with m bits (0 <= x < 2^m)
 /// - nu: The number of bits required to represent b.
 /// - m: The number of bits required to represent x.
-pub fn evaluate_fj<F: Field>(
-    f: &DenseMultilinearExtension<F>,
-    b: usize,
-    x: usize,
-    l: usize
-) -> F {
+pub fn evaluate_fj<F: Field>(f: &DenseMultilinearExtension<F>, b: usize, x: usize, l: usize) -> F {
     // For the specific case of evaluating f_j at (b, x), we can directly access the evaluation
     // at the corresponding index in the evaluations vector.
     // The index is calculated as (b << l) | x.
@@ -70,7 +64,7 @@ mod tests {
     use crate::sumfold::utils::build_random_poly;
 
     use super::*;
-    use ark_std::{rand::SeedableRng, rand::rngs::StdRng};
+    use ark_std::{rand::rngs::StdRng, rand::SeedableRng};
     use ark_test_curves::bls12_381::Fr as FF;
 
     #[test]
@@ -87,9 +81,8 @@ mod tests {
         let l = (x as f64).log2() as usize;
         let mut rng = StdRng::seed_from_u64(99);
 
-        let gs_for_j: Vec<DenseMultilinearExtension<FF>> = (0..n).map(|_| {
-            build_random_poly(l, &mut rng)
-        }).collect();
+        let gs_for_j: Vec<DenseMultilinearExtension<FF>> =
+            (0..n).map(|_| build_random_poly(l, &mut rng)).collect();
 
         let f_j = build_fj_polynomial(&gs_for_j);
         assert_eq!(f_j.num_vars, nu + l);

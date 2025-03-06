@@ -2,13 +2,13 @@
 extern crate criterion;
 
 use ark_ff::Field;
+use ark_poly::{DenseMultilinearExtension, MultilinearExtension, SparseMultilinearExtension};
+use ark_std::ops::Range;
+use criterion::{black_box, BenchmarkId, Criterion};
 use gkrfold::{
     gkr_round_sumcheck::GKRRoundSumcheck,
     rng::{Blake2b512Rng, FeedableRNG},
 };
-use ark_poly::{DenseMultilinearExtension, MultilinearExtension, SparseMultilinearExtension};
-use ark_std::ops::Range;
-use criterion::{black_box, BenchmarkId, Criterion};
 
 const NUM_VARIABLES_RANGE: Range<usize> = 10..12;
 

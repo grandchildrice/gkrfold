@@ -3,7 +3,10 @@ use ark_ff::Field;
 use ark_poly::DenseMultilinearExtension;
 
 #[cfg(test)]
-use ark_std::{rand::rngs::StdRng, rand::{SeedableRng, Rng}};
+use ark_std::{
+    rand::rngs::StdRng,
+    rand::{Rng, SeedableRng},
+};
 #[cfg(test)]
 use ark_test_curves::bls12_381::Fr as FF;
 
@@ -15,11 +18,7 @@ use ark_test_curves::bls12_381::Fr as FF;
 ///
 /// Returns a DenseMultilinearExtension in `n` variables that evaluates to `T` at index `rho` and 0 elsewhere.
 #[allow(non_snake_case)]
-pub fn build_Q_polynomial<F: Field>(
-    T: F,
-    rho: usize,
-    n: usize,
-) -> DenseMultilinearExtension<F> {
+pub fn build_Q_polynomial<F: Field>(T: F, rho: usize, n: usize) -> DenseMultilinearExtension<F> {
     let bit_size = 1 << n;
     let mut evals = vec![F::zero(); bit_size];
     evals[rho] = T;
@@ -55,7 +54,11 @@ mod tests {
             if i == rho {
                 assert_eq!(Q.evaluations[i], T, "Q should evaluate to T at rho");
             } else {
-                assert_eq!(Q.evaluations[i], FF::zero(), "Q should evaluate to 0 elsewhere");
+                assert_eq!(
+                    Q.evaluations[i],
+                    FF::zero(),
+                    "Q should evaluate to 0 elsewhere"
+                );
             }
         }
     }
