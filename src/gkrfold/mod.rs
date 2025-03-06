@@ -29,6 +29,9 @@ pub struct GKRFoldInstance<F: Field> {
 /// The `gkrfold` function constructs a SumFoldProof from a vector of GKRFold instances.
 /// The SumFoldProof contains a Q polynomial, a vector of f_j polynomials, and a SumFoldInstance.
 #[allow(non_snake_case)]
+#[allow(unused_variables)]
+#[allow(unused_mut)]
+#[allow(unused_assignments)]
 pub fn gkrfold<F: Field, R: Rng>(
   instances: Vec<GKRFoldInstance<F>>,
   rng: &mut R,
