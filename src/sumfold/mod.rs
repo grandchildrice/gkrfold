@@ -39,7 +39,7 @@ pub struct SumFoldProof<F: Field> {
   /// A vector of f_j polynomials constructed from the g_vec polynomials.
   pub fj_poly: Vec<DenseMultilinearExtension<F>>,
   /// The SumFoldInstance contains the F_func and g_vec polynomials.
-  pub instance: SumFoldInstance<F>,
+  pub instances: Vec<SumFoldInstance<F>>,
 }
 
 impl<F: Field> SumFoldProof<F> {
@@ -103,7 +103,7 @@ impl<F: Field> SumFoldProof<F> {
       Self {
         Q_poly,
         fj_poly: f_js,
-        instance,
+        instances: instances.clone(),
       }
   }
 
@@ -115,8 +115,8 @@ impl<F: Field> SumFoldProof<F> {
   // 5. commit to fj polys
   // 6. return Ti, commit(f1), commit(f2), ..., commit(ft)
   #[allow(non_snake_case)]
-  pub fn verify<R: Rng>(&self, rng: &mut R,) -> bool {
-    let F_func = self.instance.F_func.clone();
+  pub fn verify<R: Rng>(&self, rng: &mut R,) -> Result<bool, Error> {
+    let F_func = self.instances[0].F_func.clone();
     let n = self.Q_poly.evaluations.len();
 
     // Important: Use the same rho_int as in sumfold
@@ -142,15 +142,31 @@ impl<F: Field> SumFoldProof<F> {
 
     for i in 0..self.Q_poly.evaluations.len() {
       if i == rho_int {
-        assert!(self.Q_poly.evaluations[i] == sum_val, "Q_poly should evaluate to sum_val at rho_int");
-        assert!(sum_val != F::zero(), "sum_val should not be zero");
+        if self.Q_poly.evaluations[i] != sum_val {
+            return Err(Error::InvalidRho);
+        }
+        if sum_val.is_zero() {
+            return Err(Error::InvalidSum);
+        }
       } else {
-        assert!(self.Q_poly.evaluations[i] == F::zero(), "Q_poly should evaluate to zero elsewhere");
+        if !self.Q_poly.evaluations[i].is_zero() {
+            return Err(Error::InvalidRho);
+        }
       }
     }
 
     // Check if the calculated sum matches the value in Q_poly at rho_int
-    sum_val == self.Q_poly.evaluations[rho_int]
+    Ok(sum_val == self.Q_poly.evaluations[rho_int])
     // TODO: change to return SumCheckProof and commitment to fj polys and claim
+    // TODO: return to the instance
   }
+}
+
+/// Error type for SumFoldProof
+#[derive(Debug)]
+pub enum Error {
+  /// The sum value is invalid
+  InvalidSum,
+  /// The rho value is invalid
+  InvalidRho,
 }

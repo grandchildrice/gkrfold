@@ -47,7 +47,7 @@ fn test_gkrfold_correctness() {
         let gkrfold_proof = gkrfold(instances, &mut rng, &mut sumfold_rng);
 
         let mut verifier_rng = StdRng::seed_from_u64(122);
-        let verified = SumFoldProof::verify(&gkrfold_proof, &mut verifier_rng);
+        let verified = SumFoldProof::verify(&gkrfold_proof, &mut verifier_rng).unwrap();
         assert!(verified, "Failed at n={} l={} t={}", n, l, t);
       }
     }
