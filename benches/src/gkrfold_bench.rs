@@ -12,7 +12,7 @@ use gkrfold::{
     sumfold::SumFoldProof,
 };
 
-const NUM_INSTANCE_RANGE: Range<usize> = 1..15;
+const NUM_INSTANCE_RANGE: Range<usize> = 1..9;
 const L: usize = 16;
 
 fn prove_bench<F: Field>(c: &mut Criterion) {
@@ -116,7 +116,7 @@ fn verify_bench<F: Field>(c: &mut Criterion) {
 }
 
 fn bench_bls_381(c: &mut Criterion) {
-    // prove_bench::<ark_test_curves::bls12_381::Fr>(c);
+    prove_bench::<ark_test_curves::bls12_381::Fr>(c);
     verify_bench::<ark_test_curves::bls12_381::Fr>(c);
 }
 

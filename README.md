@@ -46,7 +46,11 @@ TODO
 
 #### Benchmarks for `GKRFold`
 
-TODO
+|Prove|Verify|
+|-|-|
+|<img src="./benchmark_results/gkr_multiprove.png">|<img src="./benchmark_results/gkr_multiverify.png">|
+
+Input: (num of instances) * (num of layers)
 
 ## License
 

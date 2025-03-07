@@ -15,7 +15,7 @@ use gkrfold::{
 };
 use std::{rc::Rc, sync::Arc};
 
-const NUM_INSTANCE_RANGE: Range<usize> = 1..15;
+const NUM_INSTANCE_RANGE: Range<usize> = 1..9;
 const L: usize = 16;
 
 fn prove_bench<F: Field>(c: &mut Criterion) {
