@@ -6,7 +6,7 @@ Its design is based on representing each circuit layer as a corresponding layer 
 
 ![image](https://hackmd.io/_uploads/rJDhMAMc1l.png)
 
-More precisely, the layer polynomial $ V_i $ is defined as
+More precisely, the layer polynomial $V_i$ is defined as
 $$
 V_i(z) = \sum_{x,y \in \{0,1\}^{S_i}} \Bigl\{ add_{i+1}(z,x,y)\bigl(V_{i+1}(x)+V_{i+1}(y)\bigr) + mult_{i+1}(z,x,y)\bigl(V_{i+1}(x) \cdot V_{i+1}(y)\bigr) \Bigr\},
 $$

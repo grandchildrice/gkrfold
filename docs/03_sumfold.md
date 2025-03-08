@@ -62,7 +62,7 @@ Specifically, if the prover correctly prepares the value $ T_i$, then for any se
 $$
 Q(i) = T_i.
 $$
-Furthermore, the sum of the polynomial $ F\bigl(\vec{g}_i(x)\bigr) $ verified by the Sumcheck protocol is exactly equal to $ T_i $.
+Furthermore, the sum of the polynomial $F\bigl(\vec{g}_i(x)\bigr)$ verified by the Sumcheck protocol is exactly equal to $T_i$.
 
 Knowledge Soundness:
 
